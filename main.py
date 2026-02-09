@@ -78,11 +78,11 @@ class NotificationSystem:
         
         owner = self.plate_reader.get_owner(plate)
         if not owner:
-            print(f"⚠️ No owner for {plate}")
+            print(f"No owner for {plate}")
             return
         
         msg = f"VIOLATION: {violation_type} | Plate: {plate} | Owner: {owner['owner_name']}"
-        print(f"📱 SMS to {owner['phone_number']}: {msg}")
+        print(f"SMS to {owner['phone_number']}: {msg}")
         
         os.makedirs('evidence', exist_ok=True)
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -93,14 +93,14 @@ class NotificationSystem:
 
 class TrafficSystem:
     def __init__(self, video_path='videos/traffic.mp4'):
-        print("🚀 Initializing Traffic Violation System...")
+        print("Initializing Traffic Violation System...")
         
         # Create directories
         os.makedirs('evidence', exist_ok=True)
         os.makedirs('snapshots', exist_ok=True)
         
         self.model = YOLO('yolov8n.pt')
-        print("✅ YOLO model loaded")
+        print("YOLO model loaded")
         
         self.video = VideoReader(video_path)
         self.tracker = Tracker()
@@ -114,24 +114,24 @@ class TrafficSystem:
         self.no_plate_detector = NoPlateDetector()
         self.one_way_detector = OneWayDetector(allowed_direction='down')
         
-        print("✅ All detectors initialized")
+        print("All detectors initialized")
         self.violations_log = []
         
     def run(self):
-        print("▶️ Starting video processing...")
-        print("💡 Running in headless mode (no display window)")
+        print("Starting video processing...")
+        print("Running in headless mode (no display window)")
         frame_count = 0
         
         # Create output video writer
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter('output_violations.mp4', fourcc, 20.0, 
                               (self.video.width, self.video.height))
-        print("📹 Output will be saved to: output_violations.mp4")
+        print("Output will be saved to: output_violations.mp4")
         
         while True:
             ret, frame = self.video.read()
             if not ret:
-                print("📹 Video ended")
+                print("Video ended")
                 break
             
             frame_count += 1
@@ -179,7 +179,7 @@ class TrafficSystem:
                                 'frame': frame_count,
                                 'vehicle_id': v_id
                             })
-                            print(f"⚠️ VIOLATION: {v_type} - Plate: {plate}")
+                            print(f"VIOLATION: {v_type} - Plate: {plate}")
             
             # Draw annotations
             display_frame = self.draw_detections(frame, tracked, all_violations)
@@ -199,9 +199,9 @@ class TrafficSystem:
         out.release()
         self.save_log()
         self.video.release()
-        print("✅ Processing complete!")
-        print(f"📹 Output video: output_violations.mp4")
-        print(f"📊 Violations log: violations_log.csv")
+        print("Processing complete!")
+        print(f"Output video: output_violations.mp4")
+        print(f"Violations log: violations_log.csv")
     
     def get_plate(self, frame, bbox):
         x1, y1, x2, y2 = map(int, bbox)
@@ -239,7 +239,7 @@ class TrafficSystem:
             
             if has_violation:
                 violation_text = ", ".join(violation_dict[v_id])
-                cv2.putText(display, f"⚠️ {violation_text}", 
+                cv2.putText(display, f"{violation_text}", 
                            (x1, y2+20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
         
         cv2.putText(display, f"Tracked: {len(tracked)} | Violations: {len(violations)}", 
@@ -254,8 +254,8 @@ class TrafficSystem:
         
         df = pd.DataFrame(self.violations_log)
         df.to_csv('violations_log.csv', index=False)
-        print(f"💾 Saved {len(self.violations_log)} violations")
-        print("\n📊 SUMMARY:")
+        print(f"Saved {len(self.violations_log)} violations")
+        print("\nSUMMARY:")
         print(df['type'].value_counts())
 
 
@@ -265,13 +265,14 @@ if __name__ == "__main__":
     video_path = sys.argv[1] if len(sys.argv) > 1 else 'videos/traffic.mp4'
     
     print("="*60)
-    print("🚦 SMART TRAFFIC VIOLATION DETECTOR")
+    print("SMART TRAFFIC VIOLATION DETECTOR")
     print("="*60)
     
     try:
         system = TrafficSystem(video_path)
         system.run()
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         import traceback
+
         traceback.print_exc()
