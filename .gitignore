@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual Environments
+venv/
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+
+# Project specific
+outputs/
+logs/
+datasets/
+videos/
+
+# Model files (optional)
+*.h5
+*.pt
+*.onnx
