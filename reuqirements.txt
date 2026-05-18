@@ -1,7 +1,0 @@
-ultralytics
-opencv-python
-easyocr
-numpy
-pandas
-requests
-pillow
