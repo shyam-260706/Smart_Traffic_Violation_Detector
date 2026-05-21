@@ -9,8 +9,9 @@ class TrafficSystem:
     def __init__(self, video_path='videos/traffic.mp4'):
         print("Initializing Traffic Violation System...")
 
-        self.model = YOLO('models/best.pt')
-        print("Custom model loaded")
+        self.helmet_model = YOLO('models/helmet_best.pt')
+        self.redlight_model = YOLO('models/red_light_best.pt')
+        print("Both models loaded!")
 
         self.cap = cv2.VideoCapture(video_path)
         self.violations_log = []
@@ -37,22 +38,47 @@ class TrafficSystem:
             if frame_count % 30 == 0:
                 print(f"Processing frame {frame_count}...")
 
-            results = self.model(frame)[0]
+            # Run both models
+            helmet_results = self.helmet_model(frame)[0]
+            redlight_results = self.redlight_model(frame)[0]
+
             violations = []
 
-            for box in results.boxes:
+            # Helmet detections
+            for box in helmet_results.boxes:
                 cls_id = int(box.cls[0])
-                label  = self.model.names[cls_id]
+                label  = self.helmet_model.names[cls_id]
                 conf   = float(box.conf[0])
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-                # Detect violations based on class labels
                 violation = None
                 if label in ["No-Helmet", "Invalid"]:
                     violation = "no_helmet"
-                elif label == "no_plate":
-                    violation = "no_plate"
-                elif label == "red_light":
+
+                color = (0, 0, 255) if violation else (0, 255, 0)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+                cv2.putText(frame, f"{label} {conf:.2f}",
+                            (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+                if violation:
+                    violations.append(violation)
+                    self.violations_log.append({
+                        'type': violation,
+                        'frame': frame_count,
+                        'confidence': round(conf, 2),
+                        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    })
+                    print(f"VIOLATION: {violation} | Conf: {conf:.2f} | Frame: {frame_count}")
+
+            # Red light detections
+            for box in redlight_results.boxes:
+                cls_id = int(box.cls[0])
+                label  = self.redlight_model.names[cls_id]
+                conf   = float(box.conf[0])
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+
+                violation = None
+                if label == "red":
                     violation = "red_light"
 
                 color = (0, 0, 255) if violation else (0, 255, 0)
