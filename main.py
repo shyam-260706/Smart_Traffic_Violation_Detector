@@ -1,21 +1,26 @@
 import cv2
 from ultralytics import YOLO
 import pandas as pd
-import os
 from datetime import datetime
+from violations.no_helmet import HelmetDetector
+from violations.red_light import RedLightDetector
+# from violations.no_plate import NoPlateDetector
 
 
 class TrafficSystem:
     def __init__(self, video_path='videos/traffic.mp4'):
         print("Initializing Traffic Violation System...")
 
-        self.helmet_model = YOLO('models/helmet_best.pt')
-        self.redlight_model = YOLO('models/red_light_best.pt')
-        print("Both models loaded!")
+        helmet_model = YOLO('models/helmet_best.pt')
+        redlight_model = YOLO('models/red_light_best.pt')
+
+        self.helmet_detector   = HelmetDetector(helmet_model)
+        self.redlight_detector = RedLightDetector(redlight_model)
+        # self.no_plate_detector = NoPlateDetector(helmet_model)
 
         self.cap = cv2.VideoCapture(video_path)
         self.violations_log = []
-        print("Ready!")
+        print("All detectors ready!")
 
     def run(self):
         print("Starting video processing...")
@@ -38,67 +43,37 @@ class TrafficSystem:
             if frame_count % 30 == 0:
                 print(f"Processing frame {frame_count}...")
 
-            # Run both models
-            helmet_results = self.helmet_model(frame)[0]
-            redlight_results = self.redlight_model(frame)[0]
+            # Run all detectors
+            helmet_violations              = self.helmet_detector.detect(frame)
+            redlight_violations, red_active = self.redlight_detector.detect(frame)
+            # plate_violations               = self.no_plate_detector.detect(frame)
 
-            violations = []
+            all_violations = helmet_violations + redlight_violations 
+            # + plate_violations
 
-            # Helmet detections
-            for box in helmet_results.boxes:
-                cls_id = int(box.cls[0])
-                label  = self.helmet_model.names[cls_id]
-                conf   = float(box.conf[0])
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
+            # Show red light status on screen
+            status_color = (0, 0, 255) if red_active else (0, 255, 0)
+            status_text  = "RED LIGHT ACTIVE" if red_active else "SIGNAL OK"
+            cv2.putText(frame, status_text, (10, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, status_color, 2)
 
-                violation = None
-                if label in ["No-Helmet", "Invalid"]:
-                    violation = "no_helmet"
+            # HUD - violation counts
+            # cv2.putText(frame,
+            #             f"Helmet:{self.helmet_detector.get_count()} | "
+            #             f"RedLight:{self.redlight_detector.get_count()} | "
+            #             f"NoPlate:{self.no_plate_detector.get_count()}",
+            #             (10, height - 10),
+            #             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
-                color = (0, 0, 255) if violation else (0, 255, 0)
-                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-                cv2.putText(frame, f"{label} {conf:.2f}",
-                            (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-
-                if violation:
-                    violations.append(violation)
-                    self.violations_log.append({
-                        'type': violation,
-                        'frame': frame_count,
-                        'confidence': round(conf, 2),
-                        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    })
-                    print(f"VIOLATION: {violation} | Conf: {conf:.2f} | Frame: {frame_count}")
-
-            # Red light detections
-            for box in redlight_results.boxes:
-                cls_id = int(box.cls[0])
-                label  = self.redlight_model.names[cls_id]
-                conf   = float(box.conf[0])
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-
-                violation = None
-                if label == "red":
-                    violation = "red_light"
-
-                color = (0, 0, 255) if violation else (0, 255, 0)
-                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-                cv2.putText(frame, f"{label} {conf:.2f}",
-                            (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-
-                if violation:
-                    violations.append(violation)
-                    self.violations_log.append({
-                        'type': violation,
-                        'frame': frame_count,
-                        'confidence': round(conf, 2),
-                        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    })
-                    print(f"VIOLATION: {violation} | Conf: {conf:.2f} | Frame: {frame_count}")
-
-            # HUD
-            cv2.putText(frame, f"Violations: {len(violations)}",
-                        (10, height - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            # Log violations
+            for v in all_violations:
+                self.violations_log.append({
+                    'type': v['type'],
+                    'frame': frame_count,
+                    'confidence': round(v['conf'], 2),
+                    'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                })
+                print(f"VIOLATION: {v['type']} | Conf: {v['conf']:.2f} | Frame: {frame_count}")
 
             out.write(frame)
 
@@ -115,6 +90,7 @@ class TrafficSystem:
         df.to_csv('violations_log.csv', index=False)
         print(f"\nSUMMARY:")
         print(df['type'].value_counts())
+        print(f"\nTotal violations: {len(self.violations_log)}")
 
 
 if __name__ == "__main__":
