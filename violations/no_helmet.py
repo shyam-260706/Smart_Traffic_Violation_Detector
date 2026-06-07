@@ -7,7 +7,7 @@ class HelmetDetector:
 
     def detect(self, frame):
         violations = []
-        results = self.model(frame, conf=0.25)[0]
+        results = self.model(frame, conf=0.15)[0]
 
         for box in results.boxes:
             cls_id = int(box.cls[0])
@@ -17,7 +17,6 @@ class HelmetDetector:
 
             is_violation = label in ["No-Helmet", "Invalid"]
 
-            # Draw box for all detections
             color = (0, 0, 255) if is_violation else (0, 255, 0)
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
             cv2.putText(frame, f"{label} {conf:.2f}",
@@ -26,7 +25,6 @@ class HelmetDetector:
 
             if is_violation:
                 self.violation_count += 1
-                # Draw violation warning
                 cv2.putText(frame, "⚠ NO HELMET",
                             (x1, y2 + 20), cv2.FONT_HERSHEY_SIMPLEX,
                             0.6, (0, 0, 255), 2)

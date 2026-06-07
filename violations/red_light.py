@@ -8,9 +8,8 @@ class RedLightDetector:
 
     def detect(self, frame):
         violations = []
-        results = self.model(frame, conf=0.25)[0]
-        was_red = self.red_light_active  # state before this frame
-        self.red_light_active = False    # reset each frame
+        results = self.model(frame, conf=0.15)[0]
+        self.red_light_active = False
 
         for box in results.boxes:
             cls_id = int(box.cls[0])
@@ -30,13 +29,14 @@ class RedLightDetector:
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
             cv2.putText(frame, f"{label} {conf:.2f}",
-                        (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                        (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5, color, 2)
 
-            # Only count when red light FIRST appears (transition)
-            if label == "red" and not was_red:
+            if label == "red":
                 self.violation_count += 1
                 cv2.putText(frame, "⚠ RED LIGHT",
-                            (x1, y2 + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+                            (x1, y2 + 20), cv2.FONT_HERSHEY_SIMPLEX,
+                            0.6, (0, 0, 255), 2)
                 violations.append({
                     'type': 'red_light',
                     'label': label,

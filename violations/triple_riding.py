@@ -1,6 +1,6 @@
 import cv2
 
-class NoPlateDetector:
+class TripleRidingDetector:
     def __init__(self, model):
         self.model = model
         self.violation_count = 0
@@ -15,7 +15,7 @@ class NoPlateDetector:
             conf = float(box.conf[0])
             x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-            is_violation = label == "no_plate"
+            is_violation = label == "Triple Riding"
 
             color = (0, 0, 255) if is_violation else (0, 255, 0)
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
@@ -25,11 +25,11 @@ class NoPlateDetector:
 
             if is_violation:
                 self.violation_count += 1
-                cv2.putText(frame, "⚠ NO PLATE",
+                cv2.putText(frame, "⚠ TRIPLE RIDING",
                             (x1, y2 + 20), cv2.FONT_HERSHEY_SIMPLEX,
                             0.6, (0, 0, 255), 2)
                 violations.append({
-                    'type': 'no_plate',
+                    'type': 'triple_riding',
                     'label': label,
                     'conf': conf,
                     'bbox': (x1, y1, x2, y2)

@@ -4,19 +4,20 @@ import pandas as pd
 from datetime import datetime
 from violations.no_helmet import HelmetDetector
 from violations.red_light import RedLightDetector
-# from violations.no_plate import NoPlateDetector
+from violations.triple_riding import TripleRidingDetector
 
 
 class TrafficSystem:
-    def __init__(self, video_path='videos/traffic.mp4'):
+    def __init__(self, video_path='videos/sample_video2.mp4'):
         print("Initializing Traffic Violation System...")
 
-        helmet_model = YOLO('models/helmet_best.pt')
-        redlight_model = YOLO('models/red_light_best.pt')
+        helmet_model = YOLO('models/helmet_detection.pt')
+        redlight_model = YOLO('models/traffic_light.pt')
+        triple_model = YOLO('models/triple_riding.pt')
 
         self.helmet_detector   = HelmetDetector(helmet_model)
         self.redlight_detector = RedLightDetector(redlight_model)
-        # self.no_plate_detector = NoPlateDetector(helmet_model)
+        self.triple_detector   = TripleRidingDetector(triple_model)
 
         self.cap = cv2.VideoCapture(video_path)
         self.violations_log = []
@@ -44,26 +45,25 @@ class TrafficSystem:
                 print(f"Processing frame {frame_count}...")
 
             # Run all detectors
-            helmet_violations              = self.helmet_detector.detect(frame)
+            helmet_violations            = self.helmet_detector.detect(frame)
             redlight_violations, red_active = self.redlight_detector.detect(frame)
-            # plate_violations               = self.no_plate_detector.detect(frame)
+            triple_violations            = self.triple_detector.detect(frame)
 
-            all_violations = helmet_violations + redlight_violations 
-            # + plate_violations
+            all_violations = helmet_violations + redlight_violations + triple_violations
 
-            # Show red light status on screen
+            # Red light status
             status_color = (0, 0, 255) if red_active else (0, 255, 0)
             status_text  = "RED LIGHT ACTIVE" if red_active else "SIGNAL OK"
             cv2.putText(frame, status_text, (10, 30),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.8, status_color, 2)
 
-            # HUD - violation counts
-            # cv2.putText(frame,
-            #             f"Helmet:{self.helmet_detector.get_count()} | "
-            #             f"RedLight:{self.redlight_detector.get_count()} | "
-            #             f"NoPlate:{self.no_plate_detector.get_count()}",
-            #             (10, height - 10),
-            #             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            # HUD
+            cv2.putText(frame,
+                        f"Helmet:{self.helmet_detector.get_count()} | "
+                        f"RedLight:{self.redlight_detector.get_count()} | "
+                        f"Triple:{self.triple_detector.get_count()}",
+                        (10, height - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
             # Log violations
             for v in all_violations:
@@ -95,7 +95,7 @@ class TrafficSystem:
 
 if __name__ == "__main__":
     import sys
-    video_path = sys.argv[1] if len(sys.argv) > 1 else 'videos/traffic.mp4'
+    video_path = sys.argv[1] if len(sys.argv) > 1 else 'videos/sample_video2.mp4'
     print("=" * 60)
     print("SMART TRAFFIC VIOLATION DETECTOR")
     print("=" * 60)

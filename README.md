@@ -1,128 +1,93 @@
 # 🚦 Smart Traffic Violation Detector
 
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-green)
+![OpenCV](https://img.shields.io/badge/OpenCV-4.x-red)
+
 ## 📌 Overview
+A real-time traffic violation detection system using custom trained YOLOv8 models that automatically detects traffic violations from video footage. The system detects helmet violations, red light jumping, and triple riding violations.
 
-The Smart Traffic Violation Detector is a computer vision–based system designed to automatically detect traffic rule violations from video streams or CCTV footage.
-It focuses on identifying violations such as signal jumping, helmet violations, lane violations, and vehicle detection using deep learning and image processing techniques.
+## 🎯 Violations Detected
+- 🪖 **Helmet Violation** — Detects riders without helmets
+- 🔴 **Red Light Jumping** — Detects vehicles crossing during red signal
+- 🏍️ **Triple Riding** — Detects 3 or more people on a motorcycle
 
-This project aims to demonstrate how AI can assist traffic authorities by reducing manual monitoring, improving road safety, and enabling scalable automated surveillance systems.
+## 🧠 Model Performance
 
-## 🎯 Objectives
-
-Detect traffic violations in real-time or recorded video
-
-Identify vehicles and traffic signals accurately
-
-Reduce dependency on manual traffic monitoring
-
-Provide a foundation for future automation such as alerts and fines
-
-## 🧠 Key Features
-
-🚗 Vehicle Detection using deep learning models
-
-🚦 Traffic Signal Recognition
-
-❌ Violation Detection Logic (e.g., crossing during red signal)
-
-🎥 Supports video input and live camera feed
-
-📊 Logs detected violations for analysis
-
-⚠️ Currently, the system does not use any external APIs (SMS, email, or cloud services). Detected violations are displayed and stored locally.
+| Model | Precision | Recall | mAP50 |
+|-------|-----------|--------|-------|
+| Helmet Detection | 53.7% | 34.4% | 33.9% |
+| Red Light Detection | - | - | - |
+| Triple Riding Detection | 91.1% | 86.8% | 92.4% |
 
 ## 🛠️ Tech Stack
-
-Programming Language: Python
-
-Libraries & Tools:
-
-OpenCV
-
-NumPy
-
-Deep Learning Model (YOLO / CNN-based detector)
-
-Matplotlib (for visualization)
-
-## ⚙️ System Architecture
-
-Video stream is captured from CCTV / camera
-
-Frames are processed using OpenCV
-
-Vehicles and traffic signals are detected using ML models
-
-Violation rules are applied
-
-Violations are logged and displayed
+- **YOLOv8** (Ultralytics) — Object Detection
+- **OpenCV** — Video Processing
+- **Python 3.12** — Core Language
+- **Google Colab + T4 GPU** — Model Training
+- **Roboflow** — Dataset Management
+- **Pandas** — Violation Logging
 
 ## 📂 Project Structure
-Smart-Traffic-Violation-Detector/
+```
+Smart_Traffic_Violation_Detector/
 │
-├── models/              # Trained ML/DL models
-├── videos/              # Sample test videos
-├── src/
-│   ├── detection.py     # Vehicle & signal detection
-│   ├── violation.py    # Violation logic
-│   └── utils.py        # Helper functions
+├── models/
+│   ├── helmet_detection.pt
+│   ├── traffic_light.pt
+│   └── triple_riding.pt
 │
-├── outputs/             # Detected violation outputs
-├── requirements.txt
-└── README.md
+├── violations/
+│   ├── no_helmet.py
+│   ├── red_light.py
+│   └── triple_riding.py
+│
+├── train.ipynb
+├── train_redlight.ipynb
+├── train_tripleriding.ipynb
+├── main.py
+├── test_main.py
+└── requirements.txt
+```
 
 ## 🚀 How to Run
 
-Clone the repository
+### 1. Clone the repository
+```bash
+git clone https://github.com/shyam-260706/Smart_Traffic_Violation_Detector.git
+cd Smart_Traffic_Violation_Detector
+```
 
-git clone https://github.com/your-username/smart-traffic-violation-detector.git
+### 2. Install dependencies
+```bash
+pip install ultralytics opencv-python pandas
+```
 
+### 3. Run the detector
+```bash
+python main.py videos/your_video.mp4
+```
 
-Install dependencies
+## 📊 Output
+- `output_violations.mp4` — Annotated video with bounding boxes
+- `violations_log.csv` — Detailed log with timestamps and confidence scores
 
-pip install -r requirements.txt
+## 📈 Training Details
 
-
-Run the detector
-
-python src/detection.py
-
-## 🧪 Sample Violations Detected
-
-Red light signal jump
-
-Vehicle crossing stop line
-
-Lane misuse (if lane marking is visible)
-
-Helmet violation (for two-wheelers)
-
-## 📈 Results
-
-The system successfully detects traffic violations with good accuracy under proper lighting and camera positioning. Performance may vary based on video quality and environmental conditions.
+| Model | Dataset Size | Epochs | Platform |
+|-------|-------------|--------|----------|
+| Helmet | 3,276 images | 100 | Google Colab T4 GPU |
+| Red Light | 9,768 images | 100 | Google Colab T4 GPU |
+| Triple Riding | 1,505 images | 100 | Google Colab T4 GPU |
 
 ## 🔮 Future Enhancements
-
-📩 SMS / Email notification using APIs
-
-☁️ Cloud-based violation storage
-
-🔢 Automatic number plate recognition (ANPR)
-
-📱 Web or mobile dashboard
-
-🧾 Fine generation and reporting system
+- 📩 SMS/Email notifications for violations
+- 🔢 Automatic Number Plate Recognition (ANPR)
+- 📱 Web dashboard for violation monitoring
+- ☁️ Cloud-based violation storage
 
 ## 🧑‍💻 Use Cases
-
-Smart city traffic management
-
-Automated traffic surveillance
-
-Law enforcement assistance
-
-Traffic analytics and research
-
-## 📜 Conclusion
-
-This project demonstrates the practical application of computer vision and machine learning in real-world traffic systems. It serves as a strong foundation for building fully automated, scalable smart traffic monitoring solutions.
+- Smart city traffic management
+- Automated traffic surveillance
+- Law enforcement assistance
+- Traffic analytics and research
