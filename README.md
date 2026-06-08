@@ -17,7 +17,7 @@ A real-time traffic violation detection system using custom trained YOLOv8 model
 | Model | Precision | Recall | mAP50 |
 |-------|-----------|--------|-------|
 | Helmet Detection | 53.7% | 34.4% | 33.9% |
-| Red Light Detection | - | - | - |
+| Red Light Detection | 83.6% | 78.6% | 77.9% |
 | Triple Riding Detection | 91.1% | 86.8% | 92.4% |
 
 ## 🛠️ Tech Stack
