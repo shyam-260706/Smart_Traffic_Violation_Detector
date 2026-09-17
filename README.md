@@ -1,18 +1,17 @@
-# Smart Traffic Violation Detector
+#Smart Traffic Violation Detector
 
-A computer vision system that detects traffic rule violations from video footage using custom-trained YOLOv8 models. It identifies three types of violations: riders without helmets, vehicles running red lights, and triple riding on motorcycles.
+A computer vision system for detecting traffic rule violations from video footage using YOLOv8 models trained for custom purposes. It identifies three types of violations: riding without helmets, vehicles running red lights and triple riding on motorcycles.
 
-## Overview
+##Overview
 
-This project processes traffic video input and flags violations frame by frame. Three separate YOLOv8 models were trained for the three violation types, and the system runs them together, overlays detections on the video, and logs every violation with a timestamp and confidence score.
+The project accepts traffic video as input and detects violations in each frame. Three different YOLOv8 models were trained for the three violation types. The system runs them simultaneously and overlays the detections to the video and logs every violation with a timestamp and confidence score.
 
-## Features
+##Feature
 
-- Helmet violation detection (riders without helmets)
-- Red light jumping detection
-- Triple riding detection (3+ people on a motorcycle)
-- Annotated output video with bounding boxes and live violation counts
-- CSV log of all detected violations with timestamps and confidence scores
+- Helmet Violation Detection (no helmet riders)- Red light violation detection
+- Triple riding detection (3 or more people on a motorcycle)- Annotated output video with bounding boxes and real-time counts of violations
+- CSV log of all detected violations with timestamps and confidence scores .
+
 
 ## Model Performance
 
@@ -31,4 +30,4 @@ This project processes traffic video input and flags violations frame by frame. 
 - Trained on Google Colab (T4 GPU)
 - Datasets managed via Roboflow
 
-## Project Structure
+
